@@ -85,7 +85,7 @@ export default async function handler(req, res) {
                       <tr><td style="padding:5px 0;color:#6B7280;">Total</td><td style="font-weight:800;color:#0057FF;">${total||""}€</td></tr>
                     </table>
                   </div>
-                  <a href="${process.env.VERCEL_URL||"https://bookpro-landing.vercel.app"}/dashboard?slug=${slug_client}" style="display:block;background:#0057FF;color:#fff;text-decoration:none;borderRadius:10px;padding:13px;font-weight:800;font-size:14px;text-align:center;border-radius:10px;">
+                  <a href="${process.env.VERCEL_URL||"https://bookpro-iota.vercel.app"}/dashboard?slug=${slug_client}" style="display:block;background:#0057FF;color:#fff;text-decoration:none;borderRadius:10px;padding:13px;font-weight:800;font-size:14px;text-align:center;border-radius:10px;">
                     Voir dans mon tableau de bord →
                   </a>
                   <p style="font-size:12px;color:#9CA3AF;text-align:center;margin-top:16px;">${companyName} · Propulsé par BookPro</p>
@@ -100,6 +100,20 @@ export default async function handler(req, res) {
               companyName,
               senderEmail
             );
+          }
+
+          // SMS de confirmation au client final
+          if (telephone && process.env.BREVO_API_KEY) {
+            let tel = telephone.replace(/\s/g, "").replace(/\./g, "");
+            if (tel.startsWith("0")) tel = "+33" + tel.slice(1);
+            if (!tel.startsWith("+")) tel = "+33" + tel;
+            const senderName = companyName.slice(0, 11);
+            const smsText = `${companyName}\n📬 Demande reçue !\n🧹 ${service} - ${option||""}\n📅 ${date} à ${creneau?.split(" → ")[0]||""}\nConfirmation sous 24h.`;
+            await fetch("https://api.brevo.com/v3/transactionalSMS/sms", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "api-key": process.env.BREVO_API_KEY },
+              body: JSON.stringify({ sender: senderName, recipient: tel, content: smsText, type: "transactional" }),
+            }).catch(e => console.error("SMS error:", e.message));
           }
         }
       } catch (e) {
