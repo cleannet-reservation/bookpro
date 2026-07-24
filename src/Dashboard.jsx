@@ -241,6 +241,13 @@ export default function Dashboard() {
                       {s==="attente"?"⏳ En attente":s==="confirme"?"✅ Confirmer":"✕ Annuler"}
                     </button>
                   ))}
+                  <button onClick={async()=>{
+                    if(!confirm("Supprimer cette réservation ?")) return;
+                    await fetch("/api/client-reservations",{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:r.id})});
+                    setReservations(prev=>prev.filter(rv=>rv.id!==r.id));
+                  }} style={{border:"1.5px solid #FCA5A5",background:"#FEF2F2",color:"#DC2626",borderRadius:8,padding:"5px 12px",fontSize:12,fontWeight:600,cursor:"pointer",marginLeft:"auto"}}>
+                    🗑️ Supprimer
+                  </button>
                 </div>
               </div>
             ))}
