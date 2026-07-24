@@ -320,17 +320,33 @@ export default function Dashboard() {
                   </div>
                   <p style={{fontSize:11,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",letterSpacing:0.5,margin:"0 0 6px"}}>Options & Prix</p>
                   {(svc.options||[]).map((opt,oi)=>(
-                    <div key={opt.id} style={{display:"grid",gridTemplateColumns:"1fr 60px 50px 32px",gap:6,marginBottom:8,alignItems:"center"}}>
-                      <input value={opt.label} onChange={e=>updateOption(si,oi,"label",e.target.value)} style={{...IS,fontSize:13}}/>
-                      <div style={{position:"relative"}}>
-                        <input type="number" value={opt.price} onChange={e=>updateOption(si,oi,"price",e.target.value)} style={{...IS,fontSize:13,paddingRight:16}}/>
-                        <span style={{position:"absolute",right:6,top:"50%",transform:"translateY(-50%)",fontSize:11,color:"#9CA3AF"}}>€</span>
+                    <div key={opt.id} style={{border:"1.5px solid #E5E7EB",borderRadius:10,padding:"10px 12px",marginBottom:8,background:"#FAFAFA"}}>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 32px",gap:6,marginBottom:8,alignItems:"center"}}>
+                        <input value={opt.label} onChange={e=>updateOption(si,oi,"label",e.target.value)} style={{...IS,fontSize:13}}/>
+                        <button onClick={()=>removeOption(si,oi)} style={{background:"#FEF2F2",border:"1.5px solid #FCA5A5",borderRadius:6,padding:"6px",color:"#EF4444",cursor:"pointer",fontSize:14,lineHeight:1}}>✕</button>
                       </div>
-                      <div style={{position:"relative"}}>
-                        <input type="number" value={opt.duration||60} onChange={e=>updateOption(si,oi,"duration",e.target.value)} style={{...IS,fontSize:13,paddingRight:20}}/>
-                        <span style={{position:"absolute",right:4,top:"50%",transform:"translateY(-50%)",fontSize:10,color:"#9CA3AF"}}>min</span>
+                      {/* Type de prix */}
+                      <div style={{display:"flex",gap:6,marginBottom:8}}>
+                        <button onClick={()=>updateOption(si,oi,"priceType","fixed")}
+                          style={{flex:1,padding:"6px",fontSize:12,fontWeight:600,border:`1.5px solid ${!opt.priceType||opt.priceType==="fixed"?color:"#E5E7EB"}`,borderRadius:6,background:!opt.priceType||opt.priceType==="fixed"?color+"15":"#fff",color:!opt.priceType||opt.priceType==="fixed"?color:"#6B7280",cursor:"pointer"}}>
+                          💶 Prix fixe
+                        </button>
+                        <button onClick={()=>updateOption(si,oi,"priceType","m2")}
+                          style={{flex:1,padding:"6px",fontSize:12,fontWeight:600,border:`1.5px solid ${opt.priceType==="m2"?color:"#E5E7EB"}`,borderRadius:6,background:opt.priceType==="m2"?color+"15":"#fff",color:opt.priceType==="m2"?color:"#6B7280",cursor:"pointer"}}>
+                          📐 Prix/m²
+                        </button>
                       </div>
-                      <button onClick={()=>removeOption(si,oi)} style={{background:"#FEF2F2",border:"1.5px solid #FCA5A5",borderRadius:6,padding:"6px",color:"#EF4444",cursor:"pointer",fontSize:14,lineHeight:1}}>✕</button>
+                      <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                        <div style={{position:"relative",flex:1}}>
+                          <input type="number" value={opt.price} onChange={e=>updateOption(si,oi,"price",e.target.value)} style={{...IS,fontSize:13,paddingRight:36}}/>
+                          <span style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",fontSize:11,color:"#9CA3AF"}}>{opt.priceType==="m2"?"€/m²":"€"}</span>
+                        </div>
+                        <div style={{position:"relative",width:70}}>
+                          <input type="number" value={opt.duration||60} onChange={e=>updateOption(si,oi,"duration",e.target.value)} style={{...IS,fontSize:13,paddingRight:28}}/>
+                          <span style={{position:"absolute",right:4,top:"50%",transform:"translateY(-50%)",fontSize:10,color:"#9CA3AF"}}>min</span>
+                        </div>
+                      </div>
+                      {opt.priceType==="m2"&&<p style={{fontSize:11,color:"#6B7280",margin:"6px 0 0",fontStyle:"italic"}}>💡 Le client entrera la surface et le prix sera calculé</p>}
                     </div>
                   ))}
                   <button onClick={()=>addOption(si)} style={{width:"100%",background:"none",border:`1.5px dashed ${color}`,borderRadius:8,padding:"9px",color,fontWeight:600,fontSize:13,cursor:"pointer",WebkitTapHighlightColor:"transparent"}}>+ Ajouter une option</button>
