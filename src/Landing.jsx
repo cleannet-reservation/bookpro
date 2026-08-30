@@ -60,19 +60,19 @@ const STEPS = [
 const TESTIMONIALS = [
   {
     name: "Sophie M.",
-    role: "Nettoyage résidentiel, Nice",
+    role: "Coiffure à domicile, Nice",
     text: "J'ai arrêté de répondre aux messages WhatsApp pour prendre des rdv. Mes clients réservent seuls, je reçois juste la notification.",
     stars: 5,
   },
   {
     name: "Karim B.",
-    role: "Nettoyage auto, Antibes",
+    role: "Jardinage & entretien, Antibes",
     text: "L'acompte Stripe a changé ma vie. Plus un seul no-show depuis que je l'ai mis en place.",
     stars: 5,
   },
   {
     name: "Marie-Claire D.",
-    role: "Entreprise de nettoyage, Cannes",
+    role: "Massage & bien-être, Cannes",
     text: "Mon agenda Google se remplit tout seul. Je n'ai plus à faire la saisie manuelle.",
     stars: 5,
   },
@@ -94,7 +94,7 @@ function Star() {
 function FloatingCard() {
   const [step, setStep] = useState(0);
   const steps = [
-    { label: "Service sélectionné", value: "🛋️ Nettoyage Canapé — 3 places", done: true },
+    { label: "Service sélectionné", value: "✂️ Coupe & brushing — Femme", done: true },
     { label: "Créneau choisi", value: "Mardi 15 juillet · 09:00 → 10:30", done: true },
     { label: "Acompte réglé", value: "32,70 € via Stripe ✓", done: step >= 1 },
     { label: "WhatsApp envoyé", value: "Notification reçue 🔔", done: step >= 2 },
@@ -300,13 +300,13 @@ export default function App() {
       <div style={{ paddingTop: 100, minHeight: "100vh", display: "flex", alignItems: "center" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "60px 24px", display: "flex", alignItems: "center", gap: 60, flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: 300 }}>
-            <Badge>Spécial entreprises de nettoyage</Badge>
+            <Badge>Pour toutes les entreprises de service</Badge>
             <Heading size={52}>
               Vos clients réservent.<br />
               <span style={{ color: C.cyan }}>Vous intervenez.</span>
             </Heading>
             <p style={{ fontSize: 18, color: C.muted, lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }}>
-              Un système de réservation en ligne complet pour votre entreprise de nettoyage. Acompte Stripe, WhatsApp, Google Agenda — tout automatisé.
+              Un système de réservation en ligne complet pour toute entreprise de service. Acompte Stripe, WhatsApp, Google Agenda — tout automatisé.
             </p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               <CTAButton onClick={() => window.location.href="/inscription?plan=pro"}>
@@ -328,6 +328,40 @@ export default function App() {
         </div>
       </div>
 
+      {/* ── POUR QUI ── */}
+      <div style={{ background: C.navy, borderTop: `1px solid ${C.border}` }}>
+        <Section>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <Badge>Pour qui ?</Badge>
+            <Heading size={36}>Pour toute entreprise de service</Heading>
+            <p style={{ color: C.muted, fontSize: 16, maxWidth: 500, margin: "0 auto" }}>
+              Si vous prenez des rendez-vous, BookPro est fait pour vous.
+            </p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12 }}>
+            {[
+              { icon: "🧹", label: "Nettoyage" },
+              { icon: "💇", label: "Coiffure" },
+              { icon: "💆", label: "Massage / Kiné" },
+              { icon: "🌿", label: "Jardinage" },
+              { icon: "🔧", label: "Plombier / Élec" },
+              { icon: "🚗", label: "Garage / Auto" },
+              { icon: "🐕", label: "Toilettage" },
+              { icon: "📸", label: "Photographe" },
+              { icon: "🍽️", label: "Traiteur / Chef" },
+              { icon: "🏋️", label: "Coach sportif" },
+              { icon: "👶", label: "Garde d'enfants" },
+              { icon: "✨", label: "Et bien plus..." },
+            ].map(m => (
+              <div key={m.label} style={{ background: C.navyMid, border: `1px solid ${C.border}`, borderRadius: 12, padding: "16px 12px", textAlign: "center" }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>{m.icon}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: C.white }}>{m.label}</div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      </div>
+
       {/* ── FEATURES ── */}
       <div style={{ background: C.navyMid, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}` }} id="fonctionnalités">
         <Section>
@@ -335,7 +369,7 @@ export default function App() {
             <Badge>Fonctionnalités</Badge>
             <Heading>Tout ce dont vous avez besoin,<br />rien de superflu</Heading>
             <p style={{ color: C.muted, fontSize: 16, maxWidth: 500, margin: "0 auto" }}>
-              Conçu spécifiquement pour les entreprises de nettoyage. Pas un outil générique.
+              Conçu pour les artisans, prestataires et indépendants. Simple, rapide, efficace.
             </p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
@@ -492,7 +526,7 @@ export default function App() {
       <Section style={{ textAlign: "center" }}>
         <Heading size={44}>Prêt à automatiser<br />vos réservations ?</Heading>
         <p style={{ color: C.muted, fontSize: 17, marginBottom: 32 }}>
-          Rejoignez les entreprises de nettoyage qui ont arrêté de gérer leurs rdv à la main.
+          Rejoignez les professionnels qui ont automatisé leur prise de rendez-vous.
         </p>
         <CTAButton onClick={() => window.location.href="/inscription?plan=pro"}>
           Démarrer mon essai gratuit 14 jours →
@@ -506,7 +540,7 @@ export default function App() {
           <span style={{ fontWeight: 800, color: C.white }}>BookPro</span>
         </div>
         <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>
-          © 2026 BookPro · Système de réservation pour entreprises de nettoyage
+          © 2026 BookPro · Système de réservation pour professionnels du service
         </p>
       </footer>
 
