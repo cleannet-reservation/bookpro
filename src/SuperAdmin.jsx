@@ -14,6 +14,12 @@ export default function SuperAdmin() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [showCreate, setShowCreate] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createMsg, setCreateMsg] = useState(null);
+  const [newClient, setNewClient] = useState({
+    nom: "", entreprise: "", email: "", telephone: "", slug: "", mot_de_passe: "", plan: "starter"
+  });
 
   const login = async () => {
     setLoading(true);
@@ -38,6 +44,33 @@ export default function SuperAdmin() {
       body: JSON.stringify({ id, statut: newStatut }),
     });
     setClients(prev => prev.map(c => c.id === id ? { ...c, statut: newStatut } : c));
+  };
+
+  const createFreeAccount = async () => {
+    if (!newClient.nom || !newClient.email || !newClient.slug || !newClient.mot_de_passe) {
+      setCreateMsg({ ok: false, text: "Remplissez tous les champs obligatoires" });
+      return;
+    }
+    setCreating(true);
+    try {
+      const r = await fetch("/api/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-password": pwd },
+        body: JSON.stringify({
+          action: "create",
+          ...newClient,
+          entreprise: newClient.entreprise || newClient.nom,
+          statut: "active",
+          config: {},
+        }),
+      });
+      const data = await r.json();
+      if (!r.ok) { setCreateMsg({ ok: false, text: data.error || "Erreur" }); return; }
+      setCreateMsg({ ok: true, text: `✅ Compte créé ! Lien : bookpro-iota.vercel.app/booking/${newClient.slug}` });
+      setClients(prev => [data, ...prev]);
+      setNewClient({ nom: "", entreprise: "", email: "", telephone: "", slug: "", mot_de_passe: "", plan: "starter" });
+    } catch(e) { setCreateMsg({ ok: false, text: "Erreur de connexion" }); }
+    finally { setCreating(false); }
   };
 
   // Auto-login si pwd sauvegardé
@@ -117,6 +150,10 @@ export default function SuperAdmin() {
           <input value={search} onChange={e => setSearch(e.target.value)}
             placeholder="🔍 Rechercher un client..."
             style={{ flex: 1, minWidth: 200, background: C.navyMid, border: `1px solid ${C.border}`, borderRadius: 8, padding: "9px 14px", fontSize: 13, color: C.white, outline: "none", fontFamily: "inherit" }} />
+          <button onClick={() => { setShowCreate(true); setCreateMsg(null); }}
+            style={{ background: C.cyan, color: C.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
+            🎁 Compte offert
+          </button>
           {["all", "active", "trial", "suspended"].map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{
               border: `1px solid ${filter === f ? C.cyan : C.border}`,
@@ -188,6 +225,64 @@ export default function SuperAdmin() {
           ))}
         </div>
       </div>
+
+      {/* Modal création compte offert */}
+      {showCreate && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ background: C.navyMid, border: `1px solid ${C.border}`, borderRadius: 20, padding: "28px 24px", maxWidth: 480, width: "100%", boxShadow: `0 0 60px ${C.cyan}22` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+              <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: C.white }}>🎁 Créer un compte offert</h2>
+              <button onClick={() => setShowCreate(false)} style={{ background: "none", border: "none", color: C.muted, fontSize: 20, cursor: "pointer" }}>✕</button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {[
+                { label: "Nom *", key: "nom", ph: "Marie Dupont" },
+                { label: "Entreprise", key: "entreprise", ph: "CleanPro Nice" },
+                { label: "Email *", key: "email", ph: "marie@exemple.fr" },
+                { label: "Téléphone", key: "telephone", ph: "0612345678" },
+                { label: "Identifiant (slug) *", key: "slug", ph: "cleanpro-nice" },
+                { label: "Mot de passe *", key: "mot_de_passe", ph: "motdepasse123" },
+              ].map(f => (
+                <div key={f.key}>
+                  <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, display: "block", marginBottom: 4 }}>{f.label}</label>
+                  <input value={newClient[f.key]} onChange={e => setNewClient(p => ({ ...p, [f.key]: e.target.value }))}
+                    placeholder={f.ph}
+                    style={{ width: "100%", background: C.navy, border: `1px solid ${C.border}`, borderRadius: 8, padding: "9px 12px", fontSize: 13, color: C.white, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} />
+                </div>
+              ))}
+
+              {/* Plan */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, display: "block", marginBottom: 6 }}>Formule</label>
+                <div style={{ display: "flex", gap: 8 }}>
+                  {["starter", "pro"].map(p => (
+                    <button key={p} onClick={() => setNewClient(prev => ({ ...prev, plan: p }))}
+                      style={{ flex: 1, padding: "8px", fontSize: 13, fontWeight: 700, border: `1.5px solid ${newClient.plan === p ? C.cyan : C.border}`, borderRadius: 8, background: newClient.plan === p ? C.cyan + "22" : "transparent", color: newClient.plan === p ? C.cyan : C.muted, cursor: "pointer" }}>
+                      {p === "starter" ? "⚡ Starter" : "⭐ Pro"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {createMsg && (
+                <div style={{ background: createMsg.ok ? C.green + "22" : C.red + "22", border: `1px solid ${createMsg.ok ? C.green : C.red}`, borderRadius: 8, padding: "10px 14px", fontSize: 13, color: createMsg.ok ? C.green : C.red, fontWeight: 600 }}>
+                  {createMsg.text}
+                </div>
+              )}
+
+              <button onClick={createFreeAccount} disabled={creating}
+                style={{ background: C.cyan, color: C.navy, border: "none", borderRadius: 10, padding: "13px", fontSize: 15, fontWeight: 800, cursor: "pointer" }}>
+                {creating ? "⏳ Création..." : "🎁 Créer le compte offert"}
+              </button>
+
+              <p style={{ fontSize: 11, color: C.muted, margin: 0, textAlign: "center" }}>
+                Le compte sera actif immédiatement. Aucun paiement requis.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

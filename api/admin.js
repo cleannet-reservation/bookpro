@@ -48,5 +48,57 @@ export default async function handler(req, res) {
     return res.status(200).json(data);
   }
 
+  // POST — créer un compte offert
+  if (req.method === "POST") {
+    const { action, nom, entreprise, email, telephone, slug, mot_de_passe, plan, statut, config } = req.body;
+    if (action !== "create") return res.status(400).json({ error: "Action invalide" });
+
+    const r = await fetch(`${base}/clients`, {
+      method: "POST",
+      headers: { ...headers(), "Prefer": "return=representation" },
+      body: JSON.stringify({
+        nom, entreprise, email, telephone, slug, mot_de_passe,
+        plan: plan || "starter",
+        statut: statut || "active",
+        config: config || {},
+        created_at: new Date().toISOString(),
+      }),
+    });
+    const data = await r.json();
+    if (!r.ok) return res.status(400).json({ error: Array.isArray(data) ? data[0]?.message : "Erreur création" });
+
+    // Envoyer email de bienvenue
+    if (process.env.BREVO_API_KEY && email) {
+      const html = `
+        <div style="font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:24px;">
+          <h2>⬡ Bienvenue sur BookPro !</h2>
+          <p>Bonjour <strong>${nom}</strong>,</p>
+          <p>Votre compte BookPro <strong>${plan === "pro" ? "Pro ⭐" : "Starter"}</strong> a été créé.</p>
+          <div style="background:#EEF3FF;border-radius:10px;padding:16px;margin:16px 0;">
+            <p><strong>🔗 Votre page de réservation :</strong><br>
+            <a href="https://bookpro-iota.vercel.app/booking/${slug}">bookpro-iota.vercel.app/booking/${slug}</a></p>
+            <p><strong>📊 Votre tableau de bord :</strong><br>
+            <a href="https://bookpro-iota.vercel.app/dashboard">bookpro-iota.vercel.app/dashboard</a></p>
+            <p><strong>👤 Identifiant :</strong> ${slug}<br>
+            <strong>🔑 Mot de passe :</strong> ${mot_de_passe}</p>
+          </div>
+          <p>Bonne réservation ! 🚀</p>
+          <p style="font-size:12px;color:#9CA3AF;">BookPro · Système de réservation</p>
+        </div>`;
+      await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "api-key": process.env.BREVO_API_KEY },
+        body: JSON.stringify({
+          sender: { name: "BookPro", email: process.env.SENDER_EMAIL || "contact@bookpro.fr" },
+          to: [{ email, name: nom }],
+          subject: "⬡ Bienvenue sur BookPro — Votre compte est prêt !",
+          htmlContent: html,
+        }),
+      }).catch(() => {});
+    }
+
+    return res.status(201).json(Array.isArray(data) ? data[0] : data);
+  }
+
   return res.status(405).json({ error: "Method not allowed" });
 }
