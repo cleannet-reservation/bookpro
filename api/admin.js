@@ -48,6 +48,13 @@ export default async function handler(req, res) {
     return res.status(200).json(data);
   }
 
+  // DELETE — supprimer un client
+  if (req.method === "DELETE") {
+    const { id } = req.body;
+    await fetch(`${base}/clients?id=eq.${id}`, { method: "DELETE", headers: headers() });
+    return res.status(200).json({ success: true });
+  }
+
   // POST — créer un compte offert
   if (req.method === "POST") {
     const { action, nom, entreprise, email, telephone, slug, mot_de_passe, plan, statut, config } = req.body;

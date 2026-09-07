@@ -213,6 +213,17 @@ export default function SuperAdmin() {
                     style={{ background: c.statut === "suspended" ? C.green + "22" : C.red + "22", color: c.statut === "suspended" ? C.green : C.red, border: "none", borderRadius: 8, padding: "7px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
                     {c.statut === "suspended" ? "Activer" : "Suspendre"}
                   </button>
+                  <button onClick={async () => {
+                    if (!confirm(`Supprimer le compte de ${c.entreprise} ? Cette action est irréversible.`)) return;
+                    await fetch("/api/admin", {
+                      method: "DELETE",
+                      headers: { "Content-Type": "application/json", "x-admin-password": pwd },
+                      body: JSON.stringify({ id: c.id }),
+                    });
+                    setClients(prev => prev.filter(cl => cl.id !== c.id));
+                  }} style={{ background: C.red + "22", color: C.red, border: "none", borderRadius: 8, padding: "7px 12px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                    🗑️ Supprimer
+                  </button>
                 </div>
               </div>
 
