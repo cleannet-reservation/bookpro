@@ -154,6 +154,18 @@ export default function SuperAdmin() {
             style={{ background: C.cyan, color: C.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
             🎁 Compte offert
           </button>
+          <button onClick={async () => {
+            const plan = confirm("Cliquez OK pour Pro (30€), Annuler pour Starter (15€)") ? "pro" : "starter";
+            const r = await fetch("/api/tokens", { method: "POST", headers: { "Content-Type": "application/json", "x-admin-password": pwd }, body: JSON.stringify({ plan }) });
+            const data = await r.json();
+            if (data.token) {
+              const link = `${window.location.origin}/offert?token=${data.token}&plan=${plan}`;
+              navigator.clipboard.writeText(link);
+              alert(`✅ Lien copié !\n\n${link}\n\nFormule : ${plan === "pro" ? "Pro ⭐" : "Starter ⚡"}\nUsage unique — lien valable une seule fois.`);
+            }
+          }} style={{ background: "#7C3AED", color: "#fff", border: "none", borderRadius: 8, padding: "9px 16px", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
+            🔗 Générer un lien offert
+          </button>
           {["all", "active", "trial", "suspended"].map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{
               border: `1px solid ${filter === f ? C.cyan : C.border}`,
