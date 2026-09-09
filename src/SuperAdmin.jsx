@@ -17,6 +17,7 @@ export default function SuperAdmin() {
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [tokenLink, setTokenLink] = useState(null);
   const [generatingToken, setGeneratingToken] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createMsg, setCreateMsg] = useState(null);
   const [newClient, setNewClient] = useState({
