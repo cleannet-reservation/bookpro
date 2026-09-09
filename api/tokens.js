@@ -1,4 +1,7 @@
-const getBase = () => (process.env.SUPABASE_URL || "").replace(/\/rest\/v1\/?$/, "");
+const getBase = () => {
+  const url = (process.env.SUPABASE_URL || "").replace(/\/rest\/v1\/?$/, "");
+  return `${url}/rest/v1`;
+};
 const headers = () => ({
   "Content-Type": "application/json",
   "apikey": process.env.SUPABASE_ANON_KEY,
@@ -12,7 +15,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     const { token } = req.query;
     if (!token) return res.status(400).json({ error: "Token manquant" });
-    const r = await fetch(`${base}/rest/v1/tokens?token=eq.${token}&used=eq.false&select=*`, { headers: headers() });
+    const r = await fetch(`${base}/tokens?token=eq.${token}&used=eq.false&select=*`, { headers: headers() });
     const data = await r.json();
     if (!Array.isArray(data) || data.length === 0) return res.status(404).json({ error: "Token invalide ou déjà utilisé" });
     return res.status(200).json(data[0]);
@@ -22,7 +25,7 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     const { plan } = req.body;
     const token = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 10);
-    const r = await fetch(`${base}/rest/v1/tokens`, {
+    const r = await fetch(`${base}/tokens`, {
       method: "POST",
       headers: { ...headers(), "Prefer": "return=representation" },
       body: JSON.stringify({ token, plan: plan || "starter", used: false, created_at: new Date().toISOString() }),
@@ -35,7 +38,7 @@ export default async function handler(req, res) {
   // PATCH — marquer token comme utilisé
   if (req.method === "PATCH") {
     const { token } = req.body;
-    await fetch(`${base}/rest/v1/tokens?token=eq.${token}`, {
+    await fetch(`${base}/tokens?token=eq.${token}`, {
       method: "PATCH",
       headers: headers(),
       body: JSON.stringify({ used: true }),
