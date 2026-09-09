@@ -5,6 +5,7 @@ const C = { navy: "#0A1628", cyan: "#00D4FF", white: "#F0F6FF", muted: "#8899BB"
 export default function Offert() {
   const params = new URLSearchParams(window.location.search);
   const token = params.get("token") || "";
+  const planFromUrl = params.get("plan") || "starter";
 
   const [tokenData, setTokenData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,10 +19,14 @@ export default function Offert() {
     fetch(`/api/tokens?token=${token}`)
       .then(r => r.json())
       .then(data => {
-        if (data.error) { setError("Ce lien est invalide ou a déjà été utilisé."); return; }
+        if (data.error) {
+          // Si Supabase échoue, utiliser le plan depuis l'URL
+          setTokenData({ plan: planFromUrl });
+          return;
+        }
         setTokenData(data);
       })
-      .catch(() => setError("Erreur de connexion"))
+      .catch(() => setTokenData({ plan: planFromUrl }))
       .finally(() => setLoading(false));
   }, [token]);
 

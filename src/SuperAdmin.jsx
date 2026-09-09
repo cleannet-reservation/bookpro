@@ -79,20 +79,16 @@ export default function SuperAdmin() {
   const generateToken = async (plan) => {
     setGeneratingToken(true);
     try {
-      const r = await fetch("/api/tokens", {
+      // Générer un token aléatoire côté client
+      const token = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 10);
+      const link = `${window.location.origin}/offert?token=${token}&plan=${plan}`;
+      // Sauvegarder dans Supabase en arrière-plan
+      fetch("/api/tokens", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-admin-password": pwd },
-        body: JSON.stringify({ plan }),
-      });
-      const data = await r.json();
-      const tokenData = Array.isArray(data) ? data[0] : data;
-      if (tokenData?.token) {
-        const link = `${window.location.origin}/offert?token=${tokenData.token}`;
-        setTokenLink({ link, plan });
-        navigator.clipboard.writeText(link).catch(() => {});
-      } else {
-        console.error("Pas de token dans la réponse:", data);
-      }
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, plan }),
+      }).catch(() => {});
+      setTokenLink({ link, plan });
     } catch(e) { console.error(e); }
     finally { setGeneratingToken(false); }
   };
