@@ -129,7 +129,7 @@ export default function Booking() {
   const color = company?.accentColor || "#0057FF";
 
   const optionPrice = option
-    ? option.priceType === "m2"
+    ? option.priceType === "m2" || option.priceType === "hour"
       ? Number(option.price) * (parseFloat(surface) || 0)
       : Number(option.price)
     : 0;
@@ -139,7 +139,7 @@ export default function Booking() {
 
   const canNext = () => {
     if(step===0) return !!service;
-    if(step===1) return !!option && (option.priceType !== "m2" || parseFloat(surface) > 0);
+    if(step===1) return !!option && (option.priceType !== "m2" && option.priceType !== "hour" || parseFloat(surface) > 0);
     if(step===2) return !!(form.prenom&&form.nom&&form.email&&form.telephone&&form.adresse&&form.date&&form.timeSlot);
     return true;
   };
@@ -241,7 +241,7 @@ export default function Booking() {
                       <span style={{fontWeight:600,fontSize:14}}>{opt.label}</span>
                       <div style={{display:"flex",alignItems:"center",gap:8}}>
                         <span style={{fontWeight:800,fontSize:15,color}}>
-                          {opt.priceType === "m2" ? `${fmt(opt.price)}/m²` : fmt(opt.price)}
+                          {opt.priceType === "m2" ? `${fmt(opt.price)}/m²` : opt.priceType === "hour" ? `${fmt(opt.price)}/h` : fmt(opt.price)}
                         </span>
                         {opt.duration&&<span style={{fontSize:12,color:"#9CA3AF"}}>({fmtDuration(opt.duration)})</span>}
                         {option?.id===opt.id&&<span style={{background:color,color:"#fff",borderRadius:"50%",width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700}}>✓</span>}
@@ -269,6 +269,29 @@ export default function Booking() {
                     {surface && parseFloat(surface) > 0 && (
                       <p style={{fontSize:12,color:"#6B7280",margin:"8px 0 0"}}>
                         {parseFloat(surface)} m² × {fmt(option.price)}/m² = <strong style={{color}}>{fmt(Number(option.price) * parseFloat(surface))}</strong>
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {option?.priceType === "hour" && (
+                  <div style={{background:"#EEF3FF",border:`1.5px solid ${color}`,borderRadius:12,padding:"16px 18px",marginBottom:16}}>
+                    <label style={{fontSize:14,fontWeight:700,display:"block",marginBottom:8,color:"#1A1F36"}}>
+                      ⏱️ Combien d'heures ?
+                    </label>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <input type="number" min="0.5" step="0.5" placeholder="ex: 2" value={surface} onChange={e=>setSurface(e.target.value)}
+                        style={{border:"1.5px solid #E5E7EB",borderRadius:8,padding:"10px 14px",fontSize:16,fontWeight:600,width:100,outline:"none",fontFamily:"inherit"}}/>
+                      <span style={{fontSize:15,fontWeight:600,color:"#6B7280"}}>heure(s)</span>
+                      {surface && parseFloat(surface) > 0 && (
+                        <span style={{marginLeft:"auto",fontSize:16,fontWeight:800,color}}>
+                          = {fmt(Number(option.price) * parseFloat(surface))}
+                        </span>
+                      )}
+                    </div>
+                    {surface && parseFloat(surface) > 0 && (
+                      <p style={{fontSize:12,color:"#6B7280",margin:"8px 0 0"}}>
+                        {parseFloat(surface)}h × {fmt(option.price)}/h = <strong style={{color}}>{fmt(Number(option.price) * parseFloat(surface))}</strong>
                       </p>
                     )}
                   </div>

@@ -302,11 +302,12 @@ export default function Dashboard() {
                       <div style={{display:"flex",gap:6,marginBottom:8}}>
                         <button onClick={()=>updateOption(si,oi,"priceType","fixed")} style={{flex:1,padding:"6px",fontSize:12,fontWeight:600,border:`1.5px solid ${!opt.priceType||opt.priceType==="fixed"?color:"#E5E7EB"}`,borderRadius:6,background:!opt.priceType||opt.priceType==="fixed"?color+"15":"#fff",color:!opt.priceType||opt.priceType==="fixed"?color:"#6B7280",cursor:"pointer"}}>💶 Prix fixe</button>
                         <button onClick={()=>updateOption(si,oi,"priceType","m2")} style={{flex:1,padding:"6px",fontSize:12,fontWeight:600,border:`1.5px solid ${opt.priceType==="m2"?color:"#E5E7EB"}`,borderRadius:6,background:opt.priceType==="m2"?color+"15":"#fff",color:opt.priceType==="m2"?color:"#6B7280",cursor:"pointer"}}>📐 Prix/m²</button>
+                        <button onClick={()=>updateOption(si,oi,"priceType","hour")} style={{flex:1,padding:"6px",fontSize:12,fontWeight:600,border:`1.5px solid ${opt.priceType==="hour"?color:"#E5E7EB"}`,borderRadius:6,background:opt.priceType==="hour"?color+"15":"#fff",color:opt.priceType==="hour"?color:"#6B7280",cursor:"pointer"}}>⏱️ Prix/h</button>
                       </div>
                       <div style={{display:"flex",gap:6}}>
                         <div style={{flex:1,position:"relative"}}>
                           <input type="number" value={opt.price} onChange={e=>updateOption(si,oi,"price",e.target.value)} style={{...inputStyle,paddingRight:40}}/>
-                          <span style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",fontSize:11,color:"#9CA3AF"}}>{opt.priceType==="m2"?"€/m²":"€"}</span>
+                          <span style={{position:"absolute",right:8,top:"50%",transform:"translateY(-50%)",fontSize:11,color:"#9CA3AF"}}>{opt.priceType==="m2"?"€/m²":opt.priceType==="hour"?"€/h":"€"}</span>
                         </div>
                         <div style={{width:80,position:"relative"}}>
                           <input type="number" value={opt.duration||60} onChange={e=>updateOption(si,oi,"duration",e.target.value)} style={{...inputStyle,paddingRight:30}}/>
@@ -367,6 +368,13 @@ export default function Dashboard() {
               <p style={{fontSize:12,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",margin:"0 0 12px"}}>💳 Stripe</p>
               <label style={{fontSize:13,fontWeight:600,display:"block",marginBottom:5}}>Clé publique (pk_live_...)</label>
               <input value={company.stripePublicKey||""} onChange={e=>setCompany("stripePublicKey",e.target.value)} placeholder="pk_live_..." style={inputStyle}/>
+            </div>
+            <div style={{background:"#fff",border:"1.5px solid #E5E7EB",borderRadius:12,padding:"16px"}}>
+              <p style={{fontSize:12,fontWeight:700,color:"#9CA3AF",textTransform:"uppercase",margin:"0 0 12px"}}>⭐ Google Reviews</p>
+              <label style={{fontSize:13,fontWeight:600,display:"block",marginBottom:5}}>Lien Google Reviews</label>
+              <input value={company.googleReviewUrl||""} onChange={e=>setCompany("googleReviewUrl",e.target.value)} placeholder="https://g.page/r/..." style={inputStyle}/>
+              <p style={{fontSize:11,color:"#6B7280",marginTop:4}}>💡 Vos clients satisfaits (4-5 ⭐) seront redirigés ici</p>
+              <a href="https://business.google.com" target="_blank" rel="noreferrer" style={{display:"inline-block",marginTop:8,fontSize:12,color,fontWeight:600}}>→ Trouver mon lien Google Reviews</a>
             </div>
           </div>
         ))}
