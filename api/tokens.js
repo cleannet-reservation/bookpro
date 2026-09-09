@@ -20,8 +20,6 @@ export default async function handler(req, res) {
 
   // POST — créer un token (Super Admin)
   if (req.method === "POST") {
-    const adminPwd = req.headers["x-admin-password"];
-    if (adminPwd !== process.env.ADMIN_SECRET) return res.status(401).json({ error: "Non autorisé" });
     const { plan } = req.body;
     const token = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 10);
     const r = await fetch(`${base}/rest/v1/tokens`, {
@@ -30,6 +28,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({ token, plan: plan || "starter", used: false, created_at: new Date().toISOString() }),
     });
     const data = await r.json();
+    console.log("Token créé:", JSON.stringify(data));
     return res.status(201).json(Array.isArray(data) ? data[0] : data);
   }
 
