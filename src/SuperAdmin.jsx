@@ -14,7 +14,9 @@ export default function SuperAdmin() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
-  const [showCreate, setShowCreate] = useState(false);
+  const [showTokenModal, setShowTokenModal] = useState(false);
+  const [tokenLink, setTokenLink] = useState(null);
+  const [generatingToken, setGeneratingToken] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createMsg, setCreateMsg] = useState(null);
   const [newClient, setNewClient] = useState({
@@ -71,6 +73,24 @@ export default function SuperAdmin() {
       setNewClient({ nom: "", entreprise: "", email: "", telephone: "", slug: "", mot_de_passe: "", plan: "starter" });
     } catch(e) { setCreateMsg({ ok: false, text: "Erreur de connexion" }); }
     finally { setCreating(false); }
+  };
+
+  const generateToken = async (plan) => {
+    setGeneratingToken(true);
+    try {
+      const r = await fetch("/api/tokens", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-password": pwd },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await r.json();
+      if (data.token) {
+        const link = `${window.location.origin}/offert?token=${data.token}`;
+        setTokenLink({ link, plan });
+        navigator.clipboard.writeText(link).catch(() => {});
+      }
+    } catch(e) { console.error(e); }
+    finally { setGeneratingToken(false); }
   };
 
   // Auto-login si pwd sauvegardé
@@ -154,16 +174,8 @@ export default function SuperAdmin() {
             style={{ background: C.cyan, color: C.navy, border: "none", borderRadius: 8, padding: "9px 16px", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
             🎁 Compte offert
           </button>
-          <button onClick={async () => {
-            const plan = confirm("Cliquez OK pour Pro (30€), Annuler pour Starter (15€)") ? "pro" : "starter";
-            const r = await fetch("/api/tokens", { method: "POST", headers: { "Content-Type": "application/json", "x-admin-password": pwd }, body: JSON.stringify({ plan }) });
-            const data = await r.json();
-            if (data.token) {
-              const link = `${window.location.origin}/offert?token=${data.token}&plan=${plan}`;
-              navigator.clipboard.writeText(link);
-              alert(`✅ Lien copié !\n\n${link}\n\nFormule : ${plan === "pro" ? "Pro ⭐" : "Starter ⚡"}\nUsage unique — lien valable une seule fois.`);
-            }
-          }} style={{ background: "#7C3AED", color: "#fff", border: "none", borderRadius: 8, padding: "9px 16px", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
+          <button onClick={() => { setShowTokenModal(true); setTokenLink(null); }}
+            style={{ background: "#7C3AED", color: "#fff", border: "none", borderRadius: 8, padding: "9px 16px", fontWeight: 800, fontSize: 13, cursor: "pointer" }}>
             🔗 Générer un lien offert
           </button>
           {["all", "active", "trial", "suspended"].map(f => (
@@ -249,7 +261,60 @@ export default function SuperAdmin() {
         </div>
       </div>
 
-      {/* Modal création compte offert */}
+      {/* Modal génération lien offert */}
+      {showTokenModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ background: C.navyMid, border: `1px solid ${C.border}`, borderRadius: 20, padding: "28px 24px", maxWidth: 420, width: "100%", boxShadow: `0 0 60px #7C3AED33` }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+              <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: C.white }}>🔗 Générer un lien offert</h2>
+              <button onClick={() => { setShowTokenModal(false); setTokenLink(null); }} style={{ background: "none", border: "none", color: C.muted, fontSize: 20, cursor: "pointer" }}>✕</button>
+            </div>
+
+            {!tokenLink ? (
+              <>
+                <p style={{ color: C.muted, fontSize: 13, marginBottom: 20 }}>
+                  Choisissez la formule à offrir. Le lien sera valable une seule fois.
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <button onClick={() => generateToken("starter")} disabled={generatingToken}
+                    style={{ background: "#0057FF22", border: "1.5px solid #0057FF", color: "#0057FF", borderRadius: 12, padding: "16px", fontWeight: 800, fontSize: 15, cursor: "pointer" }}>
+                    ⚡ Starter — 15€/mois
+                    <div style={{ fontSize: 11, fontWeight: 500, marginTop: 4, opacity: 0.8 }}>Réservations, Services, Upsells</div>
+                  </button>
+                  <button onClick={() => generateToken("pro")} disabled={generatingToken}
+                    style={{ background: "#7C3AED22", border: "1.5px solid #7C3AED", color: "#A78BFA", borderRadius: 12, padding: "16px", fontWeight: 800, fontSize: 15, cursor: "pointer" }}>
+                    ⭐ Pro — 30€/mois
+                    <div style={{ fontSize: 11, fontWeight: 500, marginTop: 4, opacity: 0.8 }}>Tout Starter + Stripe, SMS rappels, Google Agenda</div>
+                  </button>
+                  {generatingToken && <p style={{ color: C.muted, fontSize: 13, textAlign: "center" }}>⏳ Génération en cours...</p>}
+                </div>
+              </>
+            ) : (
+              <>
+                <p style={{ color: "#A78BFA", fontWeight: 700, fontSize: 14, marginBottom: 12 }}>
+                  ✅ Lien {tokenLink.plan === "pro" ? "Pro ⭐" : "Starter ⚡"} généré et copié !
+                </p>
+                <div style={{ background: C.navy, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 14px", marginBottom: 16, wordBreak: "break-all", fontSize: 12, color: "#00D4FF", fontFamily: "monospace" }}>
+                  {tokenLink.link}
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => navigator.clipboard.writeText(tokenLink.link).catch(() => {})}
+                    style={{ flex: 1, background: "#0057FF", color: "#fff", border: "none", borderRadius: 8, padding: "10px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                    📋 Copier le lien
+                  </button>
+                  <button onClick={() => setTokenLink(null)}
+                    style={{ flex: 1, background: C.navyMid, border: `1px solid ${C.border}`, color: C.muted, borderRadius: 8, padding: "10px", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+                    Nouveau lien
+                  </button>
+                </div>
+                <p style={{ color: C.muted, fontSize: 11, textAlign: "center", marginTop: 12 }}>
+                  ⚠️ Ce lien est valable une seule fois. Une fois utilisé, il expire automatiquement.
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       {showCreate && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
           <div style={{ background: C.navyMid, border: `1px solid ${C.border}`, borderRadius: 20, padding: "28px 24px", maxWidth: 480, width: "100%", boxShadow: `0 0 60px ${C.cyan}22` }}>
