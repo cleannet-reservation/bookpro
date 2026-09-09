@@ -85,10 +85,13 @@ export default function SuperAdmin() {
         body: JSON.stringify({ plan }),
       });
       const data = await r.json();
-      if (data.token) {
-        const link = `${window.location.origin}/offert?token=${data.token}`;
+      const tokenData = Array.isArray(data) ? data[0] : data;
+      if (tokenData?.token) {
+        const link = `${window.location.origin}/offert?token=${tokenData.token}`;
         setTokenLink({ link, plan });
         navigator.clipboard.writeText(link).catch(() => {});
+      } else {
+        console.error("Pas de token dans la réponse:", data);
       }
     } catch(e) { console.error(e); }
     finally { setGeneratingToken(false); }
